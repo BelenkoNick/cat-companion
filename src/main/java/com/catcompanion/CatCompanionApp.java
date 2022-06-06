@@ -130,7 +130,7 @@ public class CatCompanionApp extends Application {
 
     // Game initiation
     private void initGame() {
-        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.0.3fx\n" +
+        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.1.0fx\n" +
                 "\nInput create to create your first cat!" +
                 "\nor input help to get extra info on game!");
         initCommands();
