@@ -1,42 +1,67 @@
 package com.catcompanion;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
+import javafx.scene.CacheHint;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.effect.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Objects;
 
 
 public class CatCompanionApp extends Application {
-
     // Pane creation and starts the game frame
     private Parent basicPane() {
-        VBox root = new VBox(15, Data.statusLabel, Data.output, Data.input);
+
+        FlowPane root = new FlowPane(15, 15, Data.statusLabel, Data.imageView, Data.output, Data.input);
 
         Data.statusLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         Data.statusLabel.setText("");
-        Data.statusLabel.setStyle("-fx-text-fill: CornflowerBlue;");
 
-        Data.output.setPrefHeight(230);
+        Data.output.setPrefSize(350, 200);
         Data.output.setFont(Font.font(16));
         Data.output.setEditable(false);
         Data.output.setFocusTraversable(false);
         Data.output.setStyle("-fx-border-color: Blue;");
 
         Data.input.setStyle("-fx-border-color: Blue;");
+        Data.input.setPrefWidth(350);
 
         root.setStyle("-fx-background-color: Beige;");
         root.setPadding(new Insets(15));
-        root.setPrefSize(400, 400);
+        root.setPrefSize(350, 350);
+
+        Data.imageView.setFitWidth(50);
+        Data.imageView.setFitHeight(50);
 
         // kostul' for commands to not throw exception with index 0 in length 0
         Cat tmpCat = new Cat();
         Data.cats.add(tmpCat);
+
+        Media sound = new Media(Objects
+                .requireNonNull(getClass()
+                .getClassLoader()
+                .getResource("com/catcompanion/stayWithMe.mp3"))
+                .toExternalForm());
+        Data.mediaPlayer = new MediaPlayer(sound);
+        Data.mediaPlayer.setVolume(0.5);
+        Data.mediaPlayer.play();
 
         // Action receiver
         Data.input.setOnAction(e -> {
@@ -114,6 +139,12 @@ public class CatCompanionApp extends Application {
 
         CatCreation.chooseCat(Data.cats);
 
+        if (Data.cats.size() == 1) {
+            ServiceCommands.println(Data.output, "There is no cats, please create one\n" +
+                    "using create command");
+            stage.close();
+        }
+
         Data.chInput.setOnAction(e -> {
             String inputText = Data.chInput.getText();
             Data.chInput.clear();
@@ -130,7 +161,7 @@ public class CatCompanionApp extends Application {
 
     // Game initiation
     private void initGame() {
-        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.1.0fx\n" +
+        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.2.0fx\n" +
                 "\nInput create to create your first cat!" +
                 "\nor input help to get extra info on game!");
         initCommands();
@@ -169,11 +200,6 @@ public class CatCompanionApp extends Application {
                 "Check cat status",
                 "cat",
                 () -> CatCommands.catStatus(Data.cats.get(Data.catId))));
-        Data.commands.put("statusMini", new Command(
-                "statusMini",
-                "Check cat mini status",
-                "cat",
-                () -> CatCommands.catMiniStatus(Data.cats.get(Data.catId))));
         Data.commands.put("play", new Command(
                 "play",
                 "Play with cat",
@@ -194,6 +220,11 @@ public class CatCompanionApp extends Application {
                 "Create new cat",
                 "cat",
                 this::creationPane));
+        Data.commands.put("meow", new Command(
+                "meow",
+                "Cat meows",
+                "cat",
+                () -> CatCommands.meow(Data.cats.get(Data.catId))));
 
 
         // Duplicate commands

@@ -49,9 +49,9 @@ public class ServiceCommands {
     public static void closeApp() {
         new Timer().schedule(new TimerTask() {
             public void run () { System.exit(0); }
-        }, 5000);
-        println(Data.output,"// Made in collaboration with and inspired by\n" +
-                " my girlfriend!\n" +
+        }, 7000);
+        println(Data.output,"// Made in collaboration with\n" +
+                "and inspired by my girlfriend!\n" +
                 "/*\n\tBig thanks to our cats:\n" +
                 "\tJoja, Trisha and Molly\n" +
                 "\tfor being such cool kitties\n" +
