@@ -6,8 +6,8 @@ plugins {
     id 'edu.sc.seis.launch4j' version '2.5.3'
 }
 
-group 'com.example'
-version '1.0-SNAPSHOT'
+group 'com.catcompanion'
+version '2.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
