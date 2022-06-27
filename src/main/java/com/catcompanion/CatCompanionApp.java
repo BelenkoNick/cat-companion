@@ -1,27 +1,19 @@
 package com.catcompanion;
 
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
-import javafx.scene.CacheHint;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.effect.*;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.util.Duration;
 
-import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 
@@ -29,23 +21,27 @@ public class CatCompanionApp extends Application {
     // Pane creation and starts the game frame
     private Parent basicPane() {
 
-        FlowPane root = new FlowPane(15, 15, Data.statusLabel, Data.imageView, Data.output, Data.input);
+        FlowPane root = new FlowPane(15, 15, Data.statusLabel, Data.imageView, Data.barsLabel, Data.output, Data.input);
 
         Data.statusLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         Data.statusLabel.setText("");
 
-        Data.output.setPrefSize(350, 200);
+        Data.barsLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        Data.barsLabel.setText("");
+        Data.barsLabel.setTextAlignment(TextAlignment.RIGHT);
+
+        Data.output.setPrefSize(300, 200);
         Data.output.setFont(Font.font(16));
         Data.output.setEditable(false);
         Data.output.setFocusTraversable(false);
         Data.output.setStyle("-fx-border-color: Blue;");
 
         Data.input.setStyle("-fx-border-color: Blue;");
-        Data.input.setPrefWidth(350);
+        Data.input.setPrefWidth(300);
 
         root.setStyle("-fx-background-color: Beige;");
         root.setPadding(new Insets(15));
-        root.setPrefSize(350, 350);
+        root.setPrefSize(300, 300);
 
         Data.imageView.setFitWidth(50);
         Data.imageView.setFitHeight(50);
@@ -70,100 +66,22 @@ public class CatCompanionApp extends Application {
             Data.input.clear();
 
             ServiceCommands.onInput(Data.commands, inputText);
-            CatCommands.catMiniStatus(Data.cats.get(Data.catId));
+            Data.cats.get(Data.catId).catMiniStatus();
         });
 
 
-        CatCommands.catMiniStatus(Data.cats.get(Data.catId));
+        Data.cats.get(Data.catId).catMiniStatus();
 
         initGame();
 
         return root;
     }
-    private void creationPane() {
-        VBox root = new VBox(15, Data.crOutput, Data.crInput);
-
-        // Basic Fields and Areas rules
-        Data.crOutput.setPrefHeight(250);
-        Data.crOutput.setFont(Font.font(16));
-        Data.crOutput.setEditable(false);
-        Data.crOutput.setFocusTraversable(false);
-
-        root.setPadding(new Insets(15));
-        root.setPrefSize(250, 300);
-
-        Stage stage = new Stage();
-        stage.setTitle("Create");
-        stage.getIcons().add(new Image("com/catcompanion/catIcon.png"));
-        stage.setScene(new Scene(root));
-        stage.show();
-
-        Cat tmpCat = new Cat();
-
-        ServiceCommands.println(Data.crOutput,
-                "Set your cat's name:");
-        Data.crInput.setOnAction(e -> {
-            String inputText = Data.crInput.getText();
-            ServiceCommands.println(Data.crOutput, inputText);
-            Data.crInput.clear();
-
-            int id = CatCreation.createCat(Data.cats, tmpCat, inputText);
-            if (id != -1) {
-                Data.catId = id;
-                Data.crOutput.clear();
-                stage.close();
-
-                CatCommands.catStatus(Data.cats.get(Data.catId));
-                CatCommands.catMiniStatus(Data.cats.get(Data.catId));
-            }
-        });
-    }
-
-    private void choosePane() {
-        VBox root = new VBox(15, Data.chOutput, Data.chInput);
-
-        // Basic Fields and Areas rules
-        Data.chOutput.setPrefHeight(250);
-        Data.chOutput.setFont(Font.font(16));
-        Data.chOutput.setEditable(false);
-        Data.chOutput.setFocusTraversable(false);
-
-        root.setPadding(new Insets(15));
-        root.setPrefSize(200, 300);
-
-        Stage stage = new Stage();
-        stage.setTitle("Choose");
-        stage.getIcons().add(new Image("com/catcompanion/catIcon.png"));
-        stage.setScene(new Scene(root));
-        stage.show();
-
-        CatCreation.chooseCat(Data.cats);
-
-        if (Data.cats.size() == 1) {
-            ServiceCommands.println(Data.output, "There is no cats, please create one\n" +
-                    "using create command");
-            stage.close();
-        }
-
-        Data.chInput.setOnAction(e -> {
-            String inputText = Data.chInput.getText();
-            Data.chInput.clear();
-            Data.catId = Integer.parseInt(inputText);
-
-            Data.chOutput.clear();
-            stage.close();
-
-            CatCommands.catStatus(Data.cats.get(Data.catId));
-            CatCommands.catMiniStatus(Data.cats.get(Data.catId));
-        });
-
-    }
 
     // Game initiation
     private void initGame() {
-        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.2.0fx\n" +
-                "\nInput create to create your first cat!" +
-                "\nor input help to get extra info on game!");
+        ServiceCommands.println(Data.output, "Welcome to Cat Companion! v0.3.0fx\n" +
+                "\nInput \"create\" to get your first cat!" +
+                "\nInput \"help\" to get extra info on game!");
         initCommands();
     }
 
@@ -192,39 +110,44 @@ public class CatCompanionApp extends Application {
                 "action",
                 "Lists cat actions",
                 "service",
-                ServiceCommands::getCommands));
+                Panes::commandsPane));
 
         //Cat Commands
         Data.commands.put("status", new Command(
                 "status",
                 "Check cat status",
                 "cat",
-                () -> CatCommands.catStatus(Data.cats.get(Data.catId))));
+                () -> Data.cats.get(Data.catId).catStatus()));
         Data.commands.put("play", new Command(
                 "play",
                 "Play with cat",
                 "cat",
-                () -> CatCommands.playWith(Data.cats.get(Data.catId))));
+                () -> Data.cats.get(Data.catId).playWith()));
         Data.commands.put("feed", new Command(
                 "feed",
                 "Feed cat",
                 "cat",
-                () -> CatCommands.feedTheCat(Data.cats.get(Data.catId))));
+                () -> Data.cats.get(Data.catId).feedTheCat()));
         Data.commands.put("change", new Command(
                 "change",
                 "Change cat",
                 "cat",
-                this::choosePane));
+                Panes::choosePane));
         Data.commands.put("create", new Command(
                 "create",
                 "Create new cat",
                 "cat",
-                this::creationPane));
+                Panes::creationPane));
         Data.commands.put("meow", new Command(
                 "meow",
                 "Cat meows",
                 "cat",
-                () -> CatCommands.meow(Data.cats.get(Data.catId))));
+                () -> Data.cats.get(Data.catId).meow()));
+        Data.commands.put("dance", new Command(
+                "dance",
+                "Cat dances",
+                "cat",
+                Panes::dancePane));
 
 
         // Duplicate commands
